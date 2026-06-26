@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,7 +15,11 @@
 
   <style>
     /* ─── Reset y variables ─────────────────────────────────────── */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     :root {
       --color-bg: #0f172a;
@@ -45,21 +50,27 @@
     }
 
     @media (min-width: 1024px) {
-      body { padding: 1.5rem 2rem; }
+      body {
+        padding: 1.5rem 2rem;
+      }
+
       #app-layout {
         flex-direction: row;
         align-items: flex-start;
       }
+
       #sidebar {
         width: 380px;
         flex-shrink: 0;
         overflow: hidden;
         transition: width 0.3s ease, margin 0.3s ease;
       }
+
       #sidebar.closed {
         width: 0;
         margin-right: 0;
       }
+
       #content {
         flex: 1;
         min-width: 0;
@@ -96,14 +107,19 @@
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      border: 1px solid rgba(255,255,255,0.06);
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
 
-    #sidebar form label { font-size: 0.85rem; font-weight: 600; color: var(--color-muted); }
+    #sidebar form label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--color-muted);
+    }
+
     #sidebar form input,
     #sidebar form select {
       background: var(--color-bg);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 8px;
       padding: 0.7rem 0.9rem;
       color: var(--color-text);
@@ -112,13 +128,28 @@
       outline: none;
       transition: border-color 0.2s;
     }
+
     #sidebar form input:focus,
-    #sidebar form select:focus { border-color: var(--color-primary); }
+    #sidebar form select:focus {
+      border-color: var(--color-primary);
+    }
 
     @media (max-width: 1023px) {
-      #sidebar form { max-width: 500px; }
-      #sidebar { margin: 0 auto; width: 100%; max-width: 500px; }
-      #content { width: 100%; max-width: 800px; margin: 0 auto; }
+      #sidebar form {
+        max-width: 500px;
+      }
+
+      #sidebar {
+        margin: 0 auto;
+        width: 100%;
+        max-width: 500px;
+      }
+
+      #content {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+      }
     }
 
     .btn {
@@ -133,7 +164,10 @@
       transition: opacity 0.2s;
     }
 
-    .btn:hover { opacity: 0.9; }
+    .btn:hover {
+      opacity: 0.9;
+    }
+
     .btn:disabled {
       opacity: 0.4;
       cursor: not-allowed;
@@ -160,7 +194,7 @@
 
     .btn-ruta {
       background: transparent;
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: var(--color-muted);
       border-radius: 8px;
       padding: 0.3rem 0.6rem;
@@ -179,8 +213,13 @@
       color: #22c55e;
     }
 
-    .card { cursor: pointer; }
-    .card:hover { border-color: var(--color-primary); }
+    .card {
+      cursor: pointer;
+    }
+
+    .card:hover {
+      border-color: var(--color-primary);
+    }
 
     /* ─── Grid de tarjetas ────────────────────────────────────── */
     #tablero {
@@ -200,15 +239,27 @@
       gap: 1rem;
       border-left: 5px solid var(--color-muted);
       animation: fadeIn 0.3s ease;
-      border: 1px solid rgba(255,255,255,0.04);
+      border: 1px solid rgba(255, 255, 255, 0.04);
     }
 
-    .card.falta  { border-left-color: var(--color-falta); }
-    .card.sobra  { border-left-color: var(--color-sobra); }
+    .card.falta {
+      border-left-color: var(--color-falta);
+    }
+
+    .card.sobra {
+      border-left-color: var(--color-sobra);
+    }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .card-info {
@@ -236,8 +287,15 @@
       white-space: nowrap;
     }
 
-    .card.falta .card-badge { background: rgba(239,68,68,0.2); color: var(--color-falta); }
-    .card.sobra .card-badge { background: rgba(34,197,94,0.2); color: var(--color-sobra); }
+    .card.falta .card-badge {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--color-falta);
+    }
+
+    .card.sobra .card-badge {
+      background: rgba(34, 197, 94, 0.2);
+      color: var(--color-sobra);
+    }
 
     .card time {
       font-size: 0.7rem;
@@ -269,7 +327,7 @@
 
     .btn-filtro {
       background: var(--color-surface);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: var(--color-muted);
       border-radius: 8px;
       padding: 0.5rem 1rem;
@@ -297,11 +355,13 @@
       border-radius: var(--radius);
       overflow: hidden;
       margin-bottom: 1.5rem;
-      border: 1px solid rgba(255,255,255,0.06);
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
 
     @media (min-width: 1024px) {
-      #map-container { height: 400px; }
+      #map-container {
+        height: 400px;
+      }
     }
 
     #map-container .leaflet-container {
@@ -321,7 +381,7 @@
 
     .btn-ubicacion {
       background: var(--color-surface);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: var(--color-muted);
       border-radius: 8px;
       padding: 0.7rem;
@@ -350,7 +410,7 @@
     }
 
     #error-msg {
-      background: rgba(239,68,68,0.15);
+      background: rgba(239, 68, 68, 0.15);
       color: var(--color-falta);
       padding: 0.6rem 1rem;
       border-radius: 8px;
@@ -361,7 +421,9 @@
       text-align: center;
     }
 
-    #error-msg.visible { display: block; }
+    #error-msg.visible {
+      display: block;
+    }
 
     /* ─── FAB: botón flotante para abrir/cerrar formulario ─────── */
     #btn-fab {
@@ -376,34 +438,53 @@
       border: none;
       font-size: 1.5rem;
       cursor: pointer;
-      box-shadow: 0 4px 16px rgba(59,130,246,0.4);
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
       z-index: 1000;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: transform 0.3s, background 0.3s;
     }
-    #btn-fab:hover { transform: scale(1.1); }
-    #btn-fab.abierto { background: var(--color-falta); transform: rotate(45deg); }
+
+    #btn-fab:hover {
+      transform: scale(1.1);
+    }
+
+    #btn-fab.abierto {
+      background: var(--color-falta);
+      transform: rotate(45deg);
+    }
 
     /* Sidebar colapsada */
     #sidebar.closed {
       overflow: hidden;
       transition: width 0.3s ease;
     }
+
     @media (min-width: 1024px) {
-      #sidebar.closed { width: 0 !important; margin: 0 !important; padding: 0 !important; }
+      #sidebar.closed {
+        width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
     }
+
     @media (max-width: 1023px) {
-      #sidebar.closed { display: none; }
+      #sidebar.closed {
+        display: none;
+      }
     }
 
     /* ─── Responsive ──────────────────────────────────────────── */
     @media (max-width: 480px) {
-      .card { flex-direction: column; align-items: flex-start; }
+      .card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <header>
@@ -736,7 +817,7 @@
     function cerrarSidebar() {
       sidebar.classList.add('closed');
       btnFab.classList.remove('abierto');
-      btnFab.textContent = '📝';
+      btnFab.textContent = '+';
     }
 
     function toggleSidebar() {
@@ -857,4 +938,5 @@
     });
   </script>
 </body>
+
 </html>
