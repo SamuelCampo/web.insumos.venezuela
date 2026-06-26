@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const express = require('express');
 const http = require('http');
+const path = require('path');
 const { Server } = require('socket.io');
 const { createClient } = require('@supabase/supabase-js');
 
@@ -12,7 +13,13 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 // Servir archivos estáticos (index.html, CSS, JS cliente)
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Ruta raíz explícita + health check para Railway
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+app.get('/health', (req, res) => res.send('ok'));
 
 // ─── Conexión a Supabase ───────────────────────────────────────────────────────
 const supabase = createClient(
