@@ -56,7 +56,7 @@ io.on('connection', async (socket) => {
 
   // ── Escuchar nuevo insumo reportado por un cliente ────────────────────────
   socket.on('nuevo-insumo', async (payload) => {
-    const { centro, insumo, estado, lat, lng } = payload;
+    const { centro, insumo, estado, lat, lng, telefono } = payload;
 
     // Validación básica del payload
     if (!centro || !insumo || !['falta', 'sobra'].includes(estado)) {
@@ -64,10 +64,10 @@ io.on('connection', async (socket) => {
       return;
     }
 
-    // Persistir en Supabase (lat/lng pueden ser null)
+    // Persistir en Supabase (lat/lng/telefono pueden ser null)
     const { data, error } = await supabase
       .from(TABLE)
-      .insert([{ centro, insumo, estado, lat: lat || null, lng: lng || null }])
+      .insert([{ centro, insumo, estado, lat: lat || null, lng: lng || null, telefono: telefono || null }])
       .select();
 
     if (error) {

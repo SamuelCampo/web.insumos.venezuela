@@ -179,7 +179,8 @@
       color: #22c55e;
     }
 
-    .card-info { cursor: pointer; }
+    .card { cursor: pointer; }
+    .card:hover { border-color: var(--color-primary); }
 
     /* ─── Grid de tarjetas ────────────────────────────────────── */
     #tablero {
@@ -434,6 +435,12 @@
           </select>
         </div>
 
+        <!-- Teléfono de contacto -->
+        <div>
+          <label for="telefono">Teléfono de contacto</label>
+          <input type="tel" id="telefono" placeholder="Ej: 0412-1234567" />
+        </div>
+
         <!-- Ubicación (campos ocultos + botón de geolocalización) -->
         <div>
           <label>Ubicación</label>
@@ -467,7 +474,7 @@
   </div>
 
   <!-- Botón flotante para reportar (aparece cuando form está oculto) -->
-  <button id="btn-fab" title="Reportar insumo">📝</button>
+  <button id="btn-fab" title="Reportar insumo">+</button>
 
   <script>
     // ─── Conexión WebSocket ──────────────────────────────────────
@@ -489,6 +496,7 @@
     const inputUbicacion = document.getElementById('input-ubicacion');
     const inputLat = document.getElementById('input-lat');
     const inputLng = document.getElementById('input-lng');
+    const inputTelefono = document.getElementById('telefono');
 
     // ─── Mapa Leaflet ─────────────────────────────────────────────
     const map = L.map('map-container').setView([6.4238, -66.5897], 6); // Centro de Venezuela
@@ -505,7 +513,7 @@
     const markersMap = {};
 
     function agregarOMoverMarcador(registro) {
-      const { id, lat, lng, centro, insumo, estado } = registro;
+      const { id, lat, lng, centro, insumo, estado, telefono } = registro;
       if (!lat || !lng) return;
 
       const color = estado === 'falta' ? '#ef4444' : '#22c55e';
@@ -522,8 +530,9 @@
         className: '',
       });
 
+      const telHtml = telefono ? `<br>📞 <a href="tel:${telefono}" style="color:#3b82f6">${telefono}</a>` : '';
       const marker = L.marker([lat, lng], { icon })
-        .bindPopup(`<b>${centro}</b><br>${insumo}<br><i>${estado === 'falta' ? '❌ Falta' : '✅ Sobra'}</i>`);
+        .bindPopup(`<b>${centro}</b><br>${insumo}${telHtml}<br><i>${estado === 'falta' ? '❌ Falta' : '✅ Sobra'}</i>`);
 
       // Si ya existía un marcador para este id, lo removemos primero
       if (markersMap[id]) {
@@ -630,11 +639,13 @@
         hour: '2-digit', minute: '2-digit'
       });
       const tieneUbicacion = registro.lat && registro.lng;
+      const telefono = registro.telefono || '';
 
       const card = document.createElement('div');
       card.className = `card ${estado}`;
       card.id = `insumo-${registro.id}`;
       card.dataset.estado = estado;
+      card.dataset.id = registro.id;
       if (tieneUbicacion) {
         card.dataset.lat = registro.lat;
         card.dataset.lng = registro.lng;
@@ -644,10 +655,15 @@
         ? `<a class="btn-ruta" href="https://www.google.com/maps/dir/?api=1&destination=${registro.lat},${registro.lng}" target="_blank" rel="noopener">🗺 Cómo llegar</a>`
         : '';
 
+      const telHtml = telefono
+        ? `<span style="font-size:0.75rem;color:var(--color-muted);margin-top:0.1rem">📞 ${telefono}</span>`
+        : '';
+
       card.innerHTML = `
-        <div class="card-info" data-id="${registro.id}">
+        <div class="card-info">
           <span class="centro">${registro.centro}</span>
           <span class="insumo">${registro.insumo}</span>
+          ${telHtml}
           <time>${fecha} ${tieneUbicacion ? '📍' : ''}</time>
         </div>
         <div class="card-actions">
@@ -782,6 +798,7 @@
         estado: selectEstado.value,
         lat: inputLat.value ? parseFloat(inputLat.value) : null,
         lng: inputLng.value ? parseFloat(inputLng.value) : null,
+        telefono: inputTelefono.value.trim() || null,
       };
 
       if (!payload.centro || !payload.insumo || !payload.estado) {
@@ -825,15 +842,14 @@
         return;
       }
 
-      // Clic en la info de la tarjeta → centrar mapa en el marcador
-      const info = e.target.closest('.card-info');
-      if (info) {
-        const card = info.closest('.card');
-        const lat = card?.dataset.lat;
-        const lng = card?.dataset.lng;
+      // Clic en la tarjeta → centrar mapa en el marcador
+      const card = e.target.closest('.card');
+      if (card && !e.target.closest('.btn-atender') && !e.target.closest('.btn-ruta')) {
+        const lat = card.dataset.lat;
+        const lng = card.dataset.lng;
         if (lat && lng) {
           map.setView([parseFloat(lat), parseFloat(lng)], 15);
-          const id = info.dataset.id;
+          const id = card.dataset.id;
           if (markersMap[id]) markersMap[id].openPopup();
         }
         return;
