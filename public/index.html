@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tablero de Insumos - Emergencia</title>
+
+  <!-- Socket.io cliente -->
+  <script src="/socket.io/socket.io.js"></script>
+
+  <style>
+    /* ─── Reset y variables ─────────────────────────────────────── */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --color-bg: #0f172a;
+      --color-surface: #1e293b;
+      --color-text: #f1f5f9;
+      --color-muted: #94a3b8;
+      --color-falta: #ef4444;
+      --color-sobra: #22c55e;
+      --color-primary: #3b82f6;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    /* ─── Header ──────────────────────────────────────────────── */
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      color: var(--color-muted);
+      font-size: 0.95rem;
+      margin-top: 0.3rem;
+    }
+
+    /* ─── Formulario ──────────────────────────────────────────── */
+    form {
+      background: var(--color-surface);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    form label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--color-muted);
+    }
+
+    form input,
+    form select {
+      background: var(--color-bg);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 0.7rem 0.9rem;
+      color: var(--color-text);
+      font-size: 1rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    form input:focus,
+    form select:focus {
+      border-color: var(--color-primary);
+    }
+
+    .btn {
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-atender {
+      background: transparent;
+      border: 1px solid var(--color-muted);
+      color: var(--color-muted);
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-atender:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    /* ─── Grid de tarjetas ────────────────────────────────────── */
+    #tablero {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .card {
+      background: var(--color-surface);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      border-left: 5px solid var(--color-muted);
+      animation: fadeIn 0.3s ease;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .card.falta  { border-left-color: var(--color-falta); }
+    .card.sobra  { border-left-color: var(--color-sobra); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .card-info .centro {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .card-info .insumo {
+      color: var(--color-muted);
+      font-size: 0.9rem;
+    }
+
+    .card-badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.35rem 0.8rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .card.falta .card-badge { background: rgba(239,68,68,0.2); color: var(--color-falta); }
+    .card.sobra .card-badge { background: rgba(34,197,94,0.2); color: var(--color-sobra); }
+
+    .card time {
+      font-size: 0.7rem;
+      color: var(--color-muted);
+      display: block;
+      margin-top: 0.15rem;
+    }
+
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Estado resolviendo (fade-out) */
+    .card.resolviendo {
+      opacity: 0.5;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+
+    /* ─── Filtros rápidos ──────────────────────────────────────── */
+    #filtros {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .btn-filtro {
+      background: var(--color-surface);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--color-muted);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-filtro:hover {
+      border-color: var(--color-primary);
+      color: var(--color-text);
+    }
+
+    .btn-filtro.activo {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+    }
+
+    /* ─── Estados vacío / error ───────────────────────────────── */
+    .empty-msg {
+      text-align: center;
+      color: var(--color-muted);
+      padding: 3rem 0;
+      font-style: italic;
+    }
+
+    #error-msg {
+      background: rgba(239,68,68,0.15);
+      color: var(--color-falta);
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      display: none;
+      max-width: 500px;
+      width: 100%;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    #error-msg.visible { display: block; }
+
+    /* ─── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 480px) {
+      .card { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🆘 Tablero de Insumos</h1>
+    <p>Reportes en tiempo real hospitales y centros de acopio</p>
+  </header>
+
+  <!-- Mensaje de error del servidor -->
+  <div id="error-msg"></div>
+
+  <!-- Formulario para reportar un insumo -->
+  <form id="form-insumo">
+    <div>
+      <label for="centro">Nombre del centro</label>
+      <input type="text" id="centro" placeholder="Ej: Hospital Universitario" required />
+    </div>
+    <div>
+      <label for="insumo">Insumo</label>
+      <input type="text" id="insumo" placeholder="Ej: Sangre O+, Agua, Guantes" required />
+    </div>
+    <div>
+      <label for="estado">Estado</label>
+      <select id="estado" required>
+        <option value="" disabled selected>Seleccionar</option>
+        <option value="falta">Falta</option>
+        <option value="sobra">Sobra</option>
+      </select>
+    </div>
+    <button type="submit" class="btn" id="btn-enviar">Reportar insumo</button>
+  </form>
+
+  <!-- Filtros rápidos -->
+  <div id="filtros">
+    <button class="btn-filtro activo" data-filtro="todos">Mostrar todos</button>
+    <button class="btn-filtro" data-filtro="falta">❌ Ver solo FALTAN</button>
+    <button class="btn-filtro" data-filtro="sobra">✅ Ver solo SOBRAN</button>
+  </div>
+
+  <!-- Tablero de alertas -->
+  <div id="tablero">
+    <p class="empty-msg">Esperando reportes...</p>
+  </div>
+
+  <script>
+    // ─── Conexión WebSocket ──────────────────────────────────────
+    const socket = io();
+
+    // ─── Referencias al DOM ──────────────────────────────────────
+    const form = document.getElementById('form-insumo');
+    const tablero = document.getElementById('tablero');
+    const errorMsg = document.getElementById('error-msg');
+    const btnEnviar = document.getElementById('btn-enviar');
+    const filtros = document.querySelectorAll('.btn-filtro');
+
+    const inputCentro = document.getElementById('centro');
+    const inputInsumo = document.getElementById('insumo');
+    const selectEstado = document.getElementById('estado');
+
+    // ─── Utilidad: mostrar/ocultar mensaje de error ──────────────
+    function mostrarError(texto) {
+      errorMsg.textContent = texto;
+      errorMsg.classList.add('visible');
+      setTimeout(() => errorMsg.classList.remove('visible'), 4000);
+    }
+
+    // ─── Renderizar una tarjeta de insumo ────────────────────────
+    function crearCard(registro) {
+      const estado = registro.estado;
+      const fecha = new Date(registro.created_at).toLocaleString('es-VE', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+
+      const card = document.createElement('div');
+      card.className = `card ${estado}`;
+      card.id = `insumo-${registro.id}`;
+      card.dataset.estado = estado;
+      card.innerHTML = `
+        <div class="card-info">
+          <span class="centro">${registro.centro}</span>
+          <span class="insumo">${registro.insumo}</span>
+          <time>${fecha}</time>
+        </div>
+        <div class="card-actions">
+          <span class="card-badge">${estado === 'falta' ? '❌ Falta' : '✅ Sobra'}</span>
+          <button class="btn-atender" data-id="${registro.id}">Atender</button>
+        </div>
+      `;
+      return card;
+    }
+
+    // ─── Insertar un insumo en el tablero (al inicio) ────────────
+    function poblarTablero(registros) {
+      tablero.innerHTML = '';
+
+      if (registros.length === 0) {
+        tablero.innerHTML = '<p class="empty-msg">Esperando reportes...</p>';
+        return;
+      }
+
+      registros.forEach((r) => {
+        const card = crearCard(r);
+        tablero.appendChild(card);
+      });
+    }
+
+    // ─── Agregar un insumo nuevo al inicio del tablero ───────────
+    function agregarInsumo(registro) {
+      // Remover mensaje vacío si existe
+      const empty = tablero.querySelector('.empty-msg');
+      if (empty) empty.remove();
+
+      const card = crearCard(registro);
+      tablero.prepend(card);
+
+      // Aplicar filtro activo si no es "todos"
+      if (filtroActivo !== 'todos') {
+        card.style.display = card.dataset.estado === filtroActivo ? '' : 'none';
+      }
+    }
+
+    // ─── Filtros rápidos ──────────────────────────────────────────
+    let filtroActivo = 'todos';
+
+    function aplicarFiltro() {
+      const cards = tablero.querySelectorAll('.card');
+      cards.forEach((card) => {
+        if (filtroActivo === 'todos') {
+          card.style.display = '';
+        } else {
+          card.style.display = card.dataset.estado === filtroActivo ? '' : 'none';
+        }
+      });
+    }
+
+    filtros.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        filtros.forEach((b) => b.classList.remove('activo'));
+        btn.classList.add('activo');
+        filtroActivo = btn.dataset.filtro;
+        aplicarFiltro();
+      });
+    });
+
+    // ─── Eventos del servidor (WebSocket) ────────────────────────
+
+    // Carga inicial: al abrir la página, recibe los últimos registros
+    socket.on('insumos-iniciales', (registros) => {
+      poblarTablero(registros);
+    });
+
+    // Nuevo insumo en tiempo real (broadcast del servidor)
+    socket.on('insumo-nuevo', (registro) => {
+      agregarInsumo(registro);
+    });
+
+    // Alerta resuelta por otro voluntario: animar y remover del DOM
+    socket.on('alerta_resuelta', (data) => {
+      const card = document.getElementById(`insumo-${data.id}`);
+      if (card) {
+        card.classList.add('resolviendo');
+        setTimeout(() => card.remove(), 500);
+      }
+    });
+
+    // Error enviado por el servidor
+    socket.on('error', (data) => {
+      mostrarError(data.mensaje);
+    });
+
+    // ─── Envío del formulario (con rate limiting) ────────────────
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const payload = {
+        centro: inputCentro.value.trim(),
+        insumo: inputInsumo.value.trim(),
+        estado: selectEstado.value,
+      };
+
+      // Validación rápida en cliente
+      if (!payload.centro || !payload.insumo || !payload.estado) {
+        mostrarError('Todos los campos son obligatorios.');
+        return;
+      }
+
+      // Deshabilitar botón por 3 segundos (anti-spam)
+      btnEnviar.disabled = true;
+      btnEnviar.textContent = 'Enviando...';
+      setTimeout(() => {
+        btnEnviar.disabled = false;
+        btnEnviar.textContent = 'Reportar insumo';
+      }, 3000);
+
+      // Emitir evento al servidor
+      socket.emit('nuevo-insumo', payload);
+
+      // Resetear formulario
+      form.reset();
+    });
+
+    // ─── Delegación de eventos: botón "Atender" ──────────────────
+    tablero.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-atender');
+      if (!btn) return;
+
+      const id = btn.dataset.id;
+      const nombreVoluntario = prompt('Ingresa tu nombre para atender esta alerta:');
+
+      if (!nombreVoluntario || nombreVoluntario.trim() === '') return;
+
+      socket.emit('marcar_resuelto', { id: Number(id), nombreVoluntario: nombreVoluntario.trim() });
+    });
+  </script>
+</body>
+</html>
