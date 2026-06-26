@@ -475,6 +475,106 @@
       }
     }
 
+    /* ─── Onboarding ──────────────────────────────────────────── */
+    #onboarding {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    #onboarding.hidden {
+      display: none;
+    }
+
+    .onboarding-card {
+      background: var(--color-surface);
+      border-radius: var(--radius);
+      padding: 2rem 1.5rem 1.5rem;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .onboarding-card .icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .onboarding-card h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .onboarding-card p {
+      color: var(--color-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+
+    .onboarding-card .dots {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .onboarding-card .dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      transition: background 0.3s;
+    }
+
+    .onboarding-card .dots span.active {
+      background: var(--color-primary);
+    }
+
+    .onboarding-card .btn-row {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .onboarding-card .btn-row button {
+      flex: 1;
+      padding: 0.65rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.2s;
+    }
+
+    .onboarding-card .btn-saltar {
+      background: transparent;
+      color: var(--color-muted);
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .onboarding-card .btn-siguiente {
+      background: var(--color-primary);
+      color: #fff;
+    }
+
+    .onboarding-card .btn-siguiente:hover {
+      opacity: 0.9;
+    }
+
+    .onboarding-card .btn-saltar:hover {
+      border-color: var(--color-primary);
+      color: var(--color-text);
+    }
+
     /* ─── Responsive ──────────────────────────────────────────── */
     @media (max-width: 480px) {
       .card {
@@ -486,6 +586,24 @@
 </head>
 
 <body>
+
+  <!-- Onboarding (primera vez) -->
+  <div id="onboarding">
+    <div class="onboarding-card">
+      <div class="icon" id="onb-icon">📝</div>
+      <h2 id="onb-title">Reporta un insumo</h2>
+      <p id="onb-text">Presiona el botón <strong>+</strong> flotante, completa los datos del centro, insumo y ubicación, luego envía el reporte.</p>
+      <div class="dots">
+        <span class="active"></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="btn-row">
+        <button class="btn-saltar" id="onb-saltar">Saltar</button>
+        <button class="btn-siguiente" id="onb-siguiente">Siguiente</button>
+      </div>
+    </div>
+  </div>
 
   <header>
     <h1>🆘 Tablero de Insumos</h1>
@@ -558,6 +676,53 @@
   <button id="btn-fab" title="Reportar insumo">+</button>
 
   <script>
+    // ─── Onboarding (guía inicial) ────────────────────────────────
+    const slides = [
+      { icon: '📝', title: 'Reporta un insumo', text: 'Presiona el botón <strong>+</strong> flotante, completa los datos del centro, insumo y ubicación, luego envía el reporte.' },
+      { icon: '🗺', title: 'Explora en el mapa', text: 'Haz clic en cualquier alerta para centrar el mapa. Usa <strong>Cómo llegar</strong> para abrir la ruta en Google Maps.' },
+      { icon: '✅', title: 'Atiende alertas', text: 'Cuando veas una alerta que puedas resolver, presiona <strong>Atender</strong>, ingresa tu nombre y la alerta desaparecerá.' },
+    ];
+
+    const onboarding = document.getElementById('onboarding');
+
+    if (localStorage.getItem('onboarding-visto')) {
+      onboarding.classList.add('hidden');
+    } else {
+      const icon = document.getElementById('onb-icon');
+      const title = document.getElementById('onb-title');
+      const text = document.getElementById('onb-text');
+      const dots = document.querySelectorAll('.dots span');
+      const btnSiguiente = document.getElementById('onb-siguiente');
+      const btnSaltar = document.getElementById('onb-saltar');
+      let paso = 0;
+
+      function mostrarPaso(i) {
+        const s = slides[i];
+        icon.textContent = s.icon;
+        title.textContent = s.title;
+        text.innerHTML = s.text;
+        dots.forEach((d, j) => d.classList.toggle('active', j === i));
+        btnSiguiente.textContent = i === slides.length - 1 ? 'Comenzar' : 'Siguiente';
+      }
+
+      btnSiguiente.addEventListener('click', () => {
+        paso++;
+        if (paso >= slides.length) {
+          onboarding.classList.add('hidden');
+          localStorage.setItem('onboarding-visto', 'true');
+        } else {
+          mostrarPaso(paso);
+        }
+      });
+
+      btnSaltar.addEventListener('click', () => {
+        onboarding.classList.add('hidden');
+        localStorage.setItem('onboarding-visto', 'true');
+      });
+
+      mostrarPaso(0);
+    }
+
     // ─── Conexión WebSocket ──────────────────────────────────────
     const socket = io();
 
@@ -904,11 +1069,7 @@
         map.removeLayer(miMarcador);
         miMarcador = null;
       }
-      // Auto-cerrar sidebar si hay alertas pendientes
-      setTimeout(() => {
-        const cards = tablero.querySelectorAll('.card');
-        if (cards.length > 0) cerrarSidebar();
-      }, 500);
+      cerrarSidebar();
     });
 
     // ─── Delegación de eventos en el tablero ──────────────────────
