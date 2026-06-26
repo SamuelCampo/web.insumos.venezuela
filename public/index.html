@@ -51,10 +51,14 @@
         align-items: flex-start;
       }
       #sidebar {
-        position: sticky;
-        top: 1.5rem;
         width: 380px;
         flex-shrink: 0;
+        overflow: hidden;
+        transition: width 0.3s ease, margin 0.3s ease;
+      }
+      #sidebar.closed {
+        width: 0;
+        margin-right: 0;
       }
       #content {
         flex: 1;
@@ -358,6 +362,41 @@
 
     #error-msg.visible { display: block; }
 
+    /* ─── FAB: botón flotante para abrir/cerrar formulario ─────── */
+    #btn-fab {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(59,130,246,0.4);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s, background 0.3s;
+    }
+    #btn-fab:hover { transform: scale(1.1); }
+    #btn-fab.abierto { background: var(--color-falta); transform: rotate(45deg); }
+
+    /* Sidebar colapsada */
+    #sidebar.closed {
+      overflow: hidden;
+      transition: width 0.3s ease;
+    }
+    @media (min-width: 1024px) {
+      #sidebar.closed { width: 0 !important; margin: 0 !important; padding: 0 !important; }
+    }
+    @media (max-width: 1023px) {
+      #sidebar.closed { display: none; }
+    }
+
     /* ─── Responsive ──────────────────────────────────────────── */
     @media (max-width: 480px) {
       .card { flex-direction: column; align-items: flex-start; }
@@ -374,7 +413,7 @@
   <div id="app-layout">
 
     <!-- Sidebar izquierda: formulario -->
-    <aside id="sidebar">
+    <aside id="sidebar" class="closed">
       <div id="error-msg"></div>
 
       <form id="form-insumo">
@@ -427,16 +466,21 @@
 
   </div>
 
+  <!-- Botón flotante para reportar (aparece cuando form está oculto) -->
+  <button id="btn-fab" title="Reportar insumo">📝</button>
+
   <script>
     // ─── Conexión WebSocket ──────────────────────────────────────
     const socket = io();
 
     // ─── Referencias al DOM ──────────────────────────────────────
     const form = document.getElementById('form-insumo');
+    const sidebar = document.getElementById('sidebar');
     const tablero = document.getElementById('tablero');
     const errorMsg = document.getElementById('error-msg');
     const btnEnviar = document.getElementById('btn-enviar');
     const btnUbicacion = document.getElementById('btn-ubicacion');
+    const btnFab = document.getElementById('btn-fab');
     const filtros = document.querySelectorAll('.btn-filtro');
 
     const inputCentro = document.getElementById('centro');
@@ -666,12 +710,42 @@
       });
     });
 
+    // ─── Sidebar colapsable (formulario) ──────────────────────────
+    function abrirSidebar() {
+      sidebar.classList.remove('closed');
+      btnFab.classList.add('abierto');
+      btnFab.textContent = '✕';
+    }
+
+    function cerrarSidebar() {
+      sidebar.classList.add('closed');
+      btnFab.classList.remove('abierto');
+      btnFab.textContent = '📝';
+    }
+
+    function toggleSidebar() {
+      if (sidebar.classList.contains('closed')) {
+        abrirSidebar();
+      } else {
+        cerrarSidebar();
+      }
+    }
+
+    btnFab.addEventListener('click', toggleSidebar);
+
+    // Abrir sidebar automáticamente si está vacío
+    function revisarSidebar() {
+      const cards = tablero.querySelectorAll('.card');
+      if (cards.length === 0) abrirSidebar();
+    }
+
     // ─── Eventos del servidor (WebSocket) ────────────────────────
 
     // Carga inicial: poblar tablero + agregar marcadores al mapa
     socket.on('insumos-iniciales', (registros) => {
       poblarTablero(registros);
       registros.forEach((r) => agregarOMoverMarcador(r));
+      revisarSidebar();
     });
 
     // Nuevo insumo en tiempo real
@@ -685,7 +759,10 @@
       const card = document.getElementById(`insumo-${data.id}`);
       if (card) {
         card.classList.add('resolviendo');
-        setTimeout(() => card.remove(), 500);
+        setTimeout(() => {
+          card.remove();
+          revisarSidebar();
+        }, 500);
       }
       removerMarcador(data.id);
     });
@@ -729,6 +806,11 @@
         map.removeLayer(miMarcador);
         miMarcador = null;
       }
+      // Auto-cerrar sidebar si hay alertas pendientes
+      setTimeout(() => {
+        const cards = tablero.querySelectorAll('.card');
+        if (cards.length > 0) cerrarSidebar();
+      }, 500);
     });
 
     // ─── Delegación de eventos en el tablero ──────────────────────
