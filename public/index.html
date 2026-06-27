@@ -244,6 +244,18 @@
       border-color: var(--color-primary);
     }
 
+    .btn-compartir {
+      background: transparent;
+      border: none;
+      color: var(--color-muted);
+      font-size: 0.9rem;
+      cursor: pointer;
+      padding: 0.2rem 0.3rem;
+      transition: color 0.2s;
+      line-height: 1;
+    }
+    .btn-compartir:hover { color: var(--color-primary); }
+
     /* ─── Grid de tarjetas ────────────────────────────────────── */
     #tablero {
       width: 100%;
@@ -937,6 +949,9 @@
         ? `<span style="font-size:0.75rem;color:var(--color-muted);margin-top:0.1rem">📞 ${telefono}</span>`
         : '';
 
+      const textCompartir = `${estado === 'falta' ? '❌ FALTA' : '✅ SOBRA'} ${registro.insumo} en ${registro.centro}${telefono ? ' — Contacto: ' + telefono : ''} 🆘 Tablero de Insumos`;
+      const urlCompartir = window.location.href;
+
       card.innerHTML = `
         <div class="card-info">
           <span class="centro">${registro.centro}</span>
@@ -947,6 +962,7 @@
         <div class="card-actions">
           <span class="card-badge">${estado === 'falta' ? '❌ Falta' : '✅ Sobra'}</span>
           ${botonesExtra}
+          <button class="btn-compartir" title="Compartir" data-compartir="${textCompartir}">↗</button>
           <button class="btn-atender" data-id="${registro.id}">Atender</button>
         </div>
       `;
@@ -1116,9 +1132,24 @@
         return;
       }
 
+      // Botón "Compartir"
+      const btnCompartir = e.target.closest('.btn-compartir');
+      if (btnCompartir) {
+        const texto = btnCompartir.dataset.compartir;
+        if (navigator.share) {
+          navigator.share({ title: 'Tablero de Insumos', text: texto, url: window.location.href })
+            .catch(() => {});
+        } else {
+          navigator.clipboard.writeText(texto + ' — ' + window.location.href)
+            .then(() => mostrarError('📋 Información copiada al portapapeles'))
+            .catch(() => mostrarError('No se pudo copiar.'));
+        }
+        return;
+      }
+
       // Clic en la tarjeta → centrar mapa en el marcador
       const card = e.target.closest('.card');
-      if (card && !e.target.closest('.btn-atender') && !e.target.closest('.btn-ruta')) {
+      if (card && !e.target.closest('.btn-atender') && !e.target.closest('.btn-ruta') && !e.target.closest('.btn-compartir')) {
         const lat = card.dataset.lat;
         const lng = card.dataset.lng;
         if (lat && lng) {
