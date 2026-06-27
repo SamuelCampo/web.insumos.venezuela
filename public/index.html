@@ -1132,20 +1132,6 @@
       }
     });
 
-    // ─── Auto-ubicación al cargar ──────────────────────────────────
-    function autoUbicacion() {
-      if (!navigator.geolocation) return;
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          actualizarMiUbicacion(pos.coords.latitude, pos.coords.longitude);
-          inputUbicacion.readOnly = false;
-        },
-        () => {},
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
-    }
-    setTimeout(autoUbicacion, 500);
-
     // ─── Recordar último centro ─────────────────────────────────────
     const CENTRO_KEY = 'ultimo-centro';
     function guardarCentro(nombre) {
@@ -1412,6 +1398,8 @@
       guardarCentro(payload.centro);
       socket.emit('nuevo-insumo', payload);
       form.reset();
+      inputLat.value = '';
+      inputLng.value = '';
       inputUbicacion.value = '';
       inputUbicacion.readOnly = true;
       inputUbicacion.placeholder = 'Presiona el botón para obtener ubicación';
