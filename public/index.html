@@ -79,24 +79,56 @@
 
       #app-layout {
         flex-direction: row;
-        align-items: flex-start;
+        align-items: stretch;
+        height: calc(100vh - 3rem - 80px);
       }
 
       #sidebar {
-        width: 380px;
+        width: 300px;
         flex-shrink: 0;
-        overflow: hidden;
-        transition: width 0.3s ease, margin 0.3s ease;
+        overflow-y: auto;
+        height: 100%;
       }
 
-      #sidebar.closed {
-        width: 0;
-        margin-right: 0;
+      #sidebar form {
+        height: 100%;
       }
 
       #content {
         flex: 1;
         min-width: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        min-height: 0;
+      }
+
+      .map-col {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .feed-col {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow-y: auto;
+      }
+
+      #map-container {
+        flex: 1;
+        height: auto;
+        min-height: 300px;
+        margin-bottom: 0;
+      }
+
+      .search-container {
+        margin-bottom: 0.75rem;
+      }
+
+      .map-toggle {
+        display: none;
       }
     }
 
@@ -197,19 +229,22 @@
     }
 
     .btn-atender {
-      background: transparent;
-      border: 1px solid var(--color-muted);
-      color: var(--color-muted);
+      background: var(--color-primary);
+      border: none;
+      color: #fff;
       border-radius: 8px;
       padding: 0.4rem 0.8rem;
       font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: opacity 0.2s;
       white-space: nowrap;
     }
 
-    .btn-atender:hover,
+    .btn-atender:hover {
+      opacity: 0.9;
+    }
+
     .btn-ruta:hover {
       border-color: var(--color-primary);
       color: var(--color-primary);
@@ -254,10 +289,26 @@
       transition: color 0.2s;
       line-height: 1;
     }
-    .btn-compartir:hover { color: var(--color-primary); }
-    .cp-icon { display: inline; }
-    @media (min-width: 768px) { .cp-icon { display: none; } }
-    @media (max-width: 767px) { .cp-text { display: none; } }
+
+    .btn-compartir:hover {
+      color: var(--color-primary);
+    }
+
+    .cp-icon {
+      display: inline;
+    }
+
+    @media (min-width: 768px) {
+      .cp-icon {
+        display: none;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .cp-text {
+        display: none;
+      }
+    }
 
     /* ─── Grid de tarjetas ────────────────────────────────────── */
     #tablero {
@@ -272,8 +323,9 @@
       border-radius: var(--radius);
       padding: 1rem 1.25rem;
       display: flex;
+      flex-direction: column;
       justify-content: space-between;
-      align-items: center;
+      align-items: baseline;
       gap: 1rem;
       border-left: 5px solid var(--color-muted);
       animation: fadeIn 0.3s ease;
@@ -337,7 +389,7 @@
 
     .card time {
       font-size: 0.7rem;
-      color: var(--color-muted);
+      color: #cbd5e1;
       display: block;
       margin-top: 0.15rem;
     }
@@ -417,7 +469,7 @@
       width: 100%;
       padding: 0.7rem 0.9rem;
       border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       background: var(--color-surface);
       color: var(--color-text);
       font-size: 0.95rem;
@@ -439,35 +491,52 @@
       left: 0;
       right: 0;
       background: var(--color-surface);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: var(--radius);
       max-height: 220px;
       overflow-y: auto;
       z-index: 1001;
       display: none;
       list-style: none;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     }
 
-    .search-results.visible { display: block; }
+    .search-results.visible {
+      display: block;
+    }
 
     .search-results li {
       padding: 0.65rem 0.9rem;
       cursor: pointer;
       font-size: 0.85rem;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
       transition: background 0.15s;
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
 
-    .search-results li:last-child { border-bottom: none; }
-    .search-results li:hover { background: rgba(59,130,246,0.12); }
+    .search-results li:last-child {
+      border-bottom: none;
+    }
 
-    .search-results li .sr-icon { font-size: 1rem; flex-shrink: 0; }
-    .search-results li .sr-name { font-weight: 600; }
-    .search-results li .sr-dir { color: var(--color-muted); font-size: 0.75rem; }
+    .search-results li:hover {
+      background: rgba(59, 130, 246, 0.12);
+    }
+
+    .search-results li .sr-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .search-results li .sr-name {
+      font-weight: 600;
+    }
+
+    .search-results li .sr-dir {
+      color: var(--color-muted);
+      font-size: 0.75rem;
+    }
 
     /* Ubicación en formulario */
     .ubicacion-row {
@@ -526,55 +595,7 @@
       display: block;
     }
 
-    /* ─── FAB: botón flotante para abrir/cerrar formulario ─────── */
-    #btn-fab {
-      position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: var(--color-primary);
-      color: #fff;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.3s, background 0.3s;
-    }
 
-    #btn-fab:hover {
-      transform: scale(1.1);
-    }
-
-    #btn-fab.abierto {
-      background: var(--color-falta);
-      transform: rotate(45deg);
-    }
-
-    /* Sidebar colapsada */
-    #sidebar.closed {
-      overflow: hidden;
-      transition: width 0.3s ease;
-    }
-
-    @media (min-width: 1024px) {
-      #sidebar.closed {
-        width: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-    }
-
-    @media (max-width: 1023px) {
-      #sidebar.closed {
-        display: none;
-      }
-    }
 
     /* ─── Onboarding ──────────────────────────────────────────── */
     #onboarding {
@@ -678,9 +699,7 @@
 
     /* ─── Reporte rápido ──────────────────────────────────────── */
     #reporte-rapido {
-      margin-top: 1.5rem;
-      padding-top: 1.25rem;
-      border-top: 1px solid rgba(255,255,255,0.06);
+      margin-top: 0.5rem;
     }
 
     #reporte-rapido h3 {
@@ -702,7 +721,7 @@
       flex: 1;
       padding: 0.4rem;
       border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       background: transparent;
       color: var(--color-muted);
       font-size: 0.8rem;
@@ -726,7 +745,7 @@
     .btn-rapido {
       padding: 0.5rem;
       border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       background: var(--color-bg);
       color: var(--color-text);
       font-size: 0.78rem;
@@ -739,15 +758,96 @@
 
     .btn-rapido:hover {
       border-color: var(--color-primary);
-      background: rgba(59,130,246,0.1);
+      background: rgba(59, 130, 246, 0.1);
     }
 
     .btn-rapido:active {
       transform: scale(0.96);
     }
 
-    .btn-rapido .emoji { font-size: 1.1rem; display: block; margin-bottom: 0.15rem; }
-    .btn-rapido .label { font-size: 0.7rem; color: var(--color-muted); }
+    .btn-rapido .emoji {
+      font-size: 1.1rem;
+      display: block;
+      margin-bottom: 0.15rem;
+    }
+
+    .btn-rapido .label {
+      font-size: 0.7rem;
+      color: var(--color-muted);
+    }
+
+    /* ─── Toggle mapa en mobile ────────────────────────────────── */
+    .map-toggle {
+      display: none;
+      width: 100%;
+      padding: 0.7rem;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 0.75rem;
+      transition: all 0.2s;
+    }
+
+    .map-toggle:hover {
+      border-color: var(--color-primary);
+    }
+
+    @media (max-width: 1023px) {
+      .map-toggle {
+        display: block;
+      }
+
+      .map-col.collapsed #map-container {
+        display: none;
+      }
+
+      #app-layout.tab-reportar #sidebar { display: block; }
+      #app-layout.tab-reportar #content { display: none; }
+      #app-layout.tab-tablero #sidebar { display: none; }
+      #app-layout.tab-tablero #content { display: block; }
+    }
+
+    /* ─── Tabs móviles ───────────────────────────────────────── */
+    #mobile-tabs {
+      display: none;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 0.7rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: var(--color-surface);
+      color: var(--color-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .tab-btn.activo {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+    }
+
+    @media (max-width: 1023px) {
+      #mobile-tabs { display: flex; }
+    }
+
+    @media (min-width: 1024px) {
+      #mobile-tabs { display: none !important; }
+    }
 
     /* ─── Responsive ──────────────────────────────────────────── */
     @media (max-width: 480px) {
@@ -775,7 +875,7 @@
     <div class="onboarding-card">
       <div class="icon" id="onb-icon">📝</div>
       <h2 id="onb-title">Reporta un insumo</h2>
-      <p id="onb-text">Presiona el botón <strong>+</strong> flotante, completa los datos del centro, insumo y ubicación, luego envía el reporte.</p>
+      <p id="onb-text">Completa los datos del centro, insumo y ubicación en el formulario, luego presiona <strong>Reportar insumo</strong>.</p>
       <div class="dots">
         <span class="active"></span>
         <span></span>
@@ -793,10 +893,16 @@
     <p>Reportes en tiempo real hospitales y centros de acopio</p>
   </header>
 
+  <!-- Tabs móviles -->
+  <div id="mobile-tabs">
+    <button class="tab-btn activo" data-tab="tablero">📋 Tablero</button>
+    <button class="tab-btn" data-tab="reportar">📝 Reportar</button>
+  </div>
+
   <div id="app-layout">
 
     <!-- Sidebar izquierda: formulario -->
-    <aside id="sidebar" class="closed">
+    <aside id="sidebar">
       <div id="error-msg"></div>
 
       <form id="form-insumo">
@@ -834,49 +940,51 @@
           <input type="hidden" id="input-lng" />
         </div>
 
+        <!-- Reporte rápido: insumos predefinidos -->
+        <div id="reporte-rapido">
+          <h3>⚡ Reporte rápido</h3>
+          <div class="rapido-toggle">
+            <button class="activo" data-rapido-estado="falta">❌ Falta</button>
+            <button data-rapido-estado="sobra">✅ Sobra</button>
+          </div>
+          <div class="rapido-grid" id="rapido-grid"></div>
+        </div>
+
         <button type="submit" class="btn" id="btn-enviar">Reportar insumo</button>
       </form>
-
-      <!-- Reporte rápido: insumos predefinidos -->
-      <div id="reporte-rapido">
-        <h3>⚡ Reporte rápido</h3>
-        <div class="rapido-toggle">
-          <button class="activo" data-rapido-estado="falta">❌ Falta</button>
-          <button data-rapido-estado="sobra">✅ Sobra</button>
-        </div>
-        <div class="rapido-grid" id="rapido-grid"></div>
-      </div>
     </aside>
 
     <!-- Contenido derecha: mapa, filtros y tablero -->
     <main id="content">
-      <!-- Buscador de lugares -->
-      <div class="search-container">
-        <input type="text" id="search-input" placeholder="🔍 Buscar lugar (hospital, centro, ciudad...)" autocomplete="off" />
-        <ul class="search-results" id="search-results"></ul>
+      <div class="map-col">
+        <!-- Buscador de lugares -->
+        <div class="search-container">
+          <input type="text" id="search-input" placeholder="🔍 Buscar lugar (hospital, centro, ciudad...)" autocomplete="off" />
+          <ul class="search-results" id="search-results"></ul>
+        </div>
+        <div id="map-container"></div>
+        <button class="map-toggle" id="map-toggle">🗺 Ocultar mapa</button>
       </div>
-      <div id="map-container"></div>
+      <div class="feed-col">
+        <div id="filtros">
+          <button class="btn-filtro activo" data-filtro="todos">Mostrar todos</button>
+          <button class="btn-filtro" data-filtro="falta">❌ FALTAN</button>
+          <button class="btn-filtro" data-filtro="sobra">✅ SOBRAN</button>
+          <button class="btn-filtro" id="btn-cerca">📍 Cerca de mí</button>
+        </div>
 
-      <div id="filtros">
-        <button class="btn-filtro activo" data-filtro="todos">Mostrar todos</button>
-        <button class="btn-filtro" data-filtro="falta">❌ Ver solo FALTAN</button>
-        <button class="btn-filtro" data-filtro="sobra">✅ Ver solo SOBRAN</button>
-      </div>
-
-      <div id="tablero">
-        <p class="empty-msg">Esperando reportes...</p>
+        <div id="tablero">
+          <p class="empty-msg">Esperando reportes...</p>
+        </div>
       </div>
     </main>
 
   </div>
 
-  <!-- Botón flotante para reportar (aparece cuando form está oculto) -->
-  <button id="btn-fab" title="Reportar insumo">+</button>
-
   <script>
     // ─── Onboarding (guía inicial) ────────────────────────────────
     const slides = [
-      { icon: '📝', title: 'Reporta un insumo', text: 'Presiona el botón <strong>+</strong> flotante, completa los datos del centro, insumo y ubicación, luego envía el reporte.' },
+      { icon: '📝', title: 'Reporta un insumo', text: 'Completa los datos del centro, insumo y ubicación en el formulario de la izquierda, luego presiona <strong>Reportar insumo</strong>.' },
       { icon: '🗺', title: 'Explora en el mapa', text: 'Haz clic en cualquier alerta para centrar el mapa. Usa <strong>Cómo llegar</strong> para abrir la ruta en Google Maps.' },
       { icon: '✅', title: 'Atiende alertas', text: 'Cuando veas una alerta que puedas resolver, presiona <strong>Atender</strong>, ingresa tu nombre y la alerta desaparecerá.' },
     ];
@@ -931,7 +1039,6 @@
     const errorMsg = document.getElementById('error-msg');
     const btnEnviar = document.getElementById('btn-enviar');
     const btnUbicacion = document.getElementById('btn-ubicacion');
-    const btnFab = document.getElementById('btn-fab');
     const filtros = document.querySelectorAll('.btn-filtro');
 
     const inputCentro = document.getElementById('centro');
@@ -942,8 +1049,26 @@
     const inputLng = document.getElementById('input-lng');
     const inputTelefono = document.getElementById('telefono');
 
+    // ─── Tabs móviles ──────────────────────────────────────────────
+    const appLayout = document.getElementById('app-layout');
+    const tabBtns = document.querySelectorAll('#mobile-tabs .tab-btn');
+
+    function activarTab(tab) {
+      tabBtns.forEach(b => b.classList.toggle('activo', b.dataset.tab === tab));
+      appLayout.classList.remove('tab-tablero', 'tab-reportar');
+      appLayout.classList.add(`tab-${tab}`);
+      if (tab === 'tablero') setTimeout(() => map.invalidateSize(), 100);
+    }
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => activarTab(btn.dataset.tab));
+    });
+
+    // Default: tablero activo (solo en mobile se aplica por CSS)
+    activarTab('tablero');
+
     // ─── Mapa Leaflet ─────────────────────────────────────────────
-    const map = L.map('map-container').setView([6.4238, -66.5897], 6); // Centro de Venezuela
+    const map = L.map('map-container').setView([10.5, -66.9167], 7); // Centro norte (Caracas)
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
@@ -1008,7 +1133,6 @@
       map.setView([lat, lng], 15);
       searchResults.classList.remove('visible');
       searchInput.value = nombre;
-      abrirSidebar();
     }
 
     searchInput.addEventListener('input', () => {
@@ -1173,33 +1297,28 @@
         btn.className = 'btn-rapido';
         btn.innerHTML = `<span class="emoji">${item.emoji}</span>${item.nombre}`;
         btn.addEventListener('click', () => {
-          const centro = inputCentro.value.trim();
-          if (!centro) {
-            const resp = prompt('¿Cuál es el nombre del centro/hospital?');
-            if (!resp || !resp.trim()) return;
-            inputCentro.value = resp.trim();
-            guardarCentro(resp.trim());
+          inputInsumo.value = item.nombre;
+          selectEstado.value = rapidoEstado;
+          if (!inputCentro.value.trim()) {
+            inputCentro.focus();
           }
-          const telefono = inputTelefono.value.trim();
-          const lat = inputLat.value ? parseFloat(inputLat.value) : null;
-          const lng = inputLng.value ? parseFloat(inputLng.value) : null;
-          const payload = {
-            centro: inputCentro.value.trim(),
-            insumo: item.nombre,
-            estado: rapidoEstado,
-            lat,
-            lng,
-            telefono: telefono || null,
-          };
-          socket.emit('nuevo-insumo', payload);
-          mostrarError(`✅ Reportado: ${rapidoEstado === 'falta' ? '❌ Falta' : '✅ Sobra'} ${item.nombre}`);
-          cerrarSidebar();
         });
         rapidoGrid.appendChild(btn);
       });
     }
     renderizarBotonesRapidos();
     restaurarCentro();
+
+    // ─── Toggle mapa en mobile ──────────────────────────────────
+    const mapToggle = document.getElementById('map-toggle');
+    const mapCol = document.querySelector('.map-col');
+    if (mapToggle) {
+      mapToggle.addEventListener('click', () => {
+        mapCol.classList.toggle('collapsed');
+        mapToggle.textContent = mapCol.classList.contains('collapsed') ? '🗺 Mostrar mapa' : '🗺 Ocultar mapa';
+        setTimeout(() => map.invalidateSize(), 300);
+      });
+    }
 
     // ─── Utilidad: mostrar/ocultar mensaje de error ──────────────
     function mostrarError(texto) {
@@ -1278,23 +1397,38 @@
 
       const card = crearCard(registro);
       tablero.prepend(card);
-
-      if (filtroActivo !== 'todos') {
-        card.style.display = card.dataset.estado === filtroActivo ? '' : 'none';
-      }
+      aplicarFiltro();
     }
 
     // ─── Filtros rápidos ──────────────────────────────────────────
     let filtroActivo = 'todos';
+    let ubicacionUsuario = null;
+    let proximidadActiva = false;
+    const RADIO_KM = 100;
+
+    function distanciaKm(lat1, lng1, lat2, lng2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLng = (lng2 - lng1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
 
     function aplicarFiltro() {
       const cards = tablero.querySelectorAll('.card');
       cards.forEach((card) => {
-        if (filtroActivo === 'todos') {
-          card.style.display = '';
-        } else {
-          card.style.display = card.dataset.estado === filtroActivo ? '' : 'none';
+        let visible = true;
+        if (filtroActivo !== 'todos') {
+          visible = card.dataset.estado === filtroActivo;
         }
+        if (visible && proximidadActiva && ubicacionUsuario) {
+          const lat = parseFloat(card.dataset.lat);
+          const lng = parseFloat(card.dataset.lng);
+          if (!lat || !lng || distanciaKm(ubicacionUsuario.lat, ubicacionUsuario.lng, lat, lng) > RADIO_KM) {
+            visible = false;
+          }
+        }
+        card.style.display = visible ? '' : 'none';
       });
     }
 
@@ -1307,34 +1441,39 @@
       });
     });
 
-    // ─── Sidebar colapsable (formulario) ──────────────────────────
-    function abrirSidebar() {
-      sidebar.classList.remove('closed');
-      btnFab.classList.add('abierto');
-      btnFab.textContent = '✕';
-    }
-
-    function cerrarSidebar() {
-      sidebar.classList.add('closed');
-      btnFab.classList.remove('abierto');
-      btnFab.textContent = '+';
-    }
-
-    function toggleSidebar() {
-      if (sidebar.classList.contains('closed')) {
-        abrirSidebar();
-      } else {
-        cerrarSidebar();
+    const btnCerca = document.getElementById('btn-cerca');
+    btnCerca.addEventListener('click', () => {
+      if (proximidadActiva) {
+        proximidadActiva = false;
+        btnCerca.classList.remove('activo');
+        btnCerca.textContent = '📍 Cerca de mí';
+        aplicarFiltro();
+        return;
       }
-    }
-
-    btnFab.addEventListener('click', toggleSidebar);
-
-    // Abrir sidebar automáticamente si está vacío
-    function revisarSidebar() {
-      const cards = tablero.querySelectorAll('.card');
-      if (cards.length === 0) abrirSidebar();
-    }
+      if (!navigator.geolocation) {
+        mostrarError('Tu navegador no soporta geolocalización.');
+        return;
+      }
+      btnCerca.textContent = '📍 Obteniendo...';
+      btnCerca.disabled = true;
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          ubicacionUsuario = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          proximidadActiva = true;
+          btnCerca.classList.add('activo');
+          btnCerca.textContent = `📍 Cerca de mí (${RADIO_KM}km)`;
+          btnCerca.disabled = false;
+          map.setView([ubicacionUsuario.lat, ubicacionUsuario.lng], 10);
+          aplicarFiltro();
+        },
+        () => {
+          mostrarError('No se pudo obtener tu ubicación para el filtro.');
+          btnCerca.textContent = '📍 Cerca de mí';
+          btnCerca.disabled = false;
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    });
 
     // ─── Eventos del servidor (WebSocket) ────────────────────────
 
@@ -1342,7 +1481,6 @@
     socket.on('insumos-iniciales', (registros) => {
       poblarTablero(registros);
       registros.forEach((r) => agregarOMoverMarcador(r));
-      revisarSidebar();
     });
 
     // Nuevo insumo en tiempo real
@@ -1358,7 +1496,6 @@
         card.classList.add('resolviendo');
         setTimeout(() => {
           card.remove();
-          revisarSidebar();
         }, 500);
       }
       removerMarcador(data.id);
@@ -1398,16 +1535,17 @@
       guardarCentro(payload.centro);
       socket.emit('nuevo-insumo', payload);
       form.reset();
+      selectEstado.value = '';
       inputLat.value = '';
       inputLng.value = '';
       inputUbicacion.value = '';
       inputUbicacion.readOnly = true;
       inputUbicacion.placeholder = 'Presiona el botón para obtener ubicación';
+      activarTab('tablero');
       if (miMarcador) {
         map.removeLayer(miMarcador);
         miMarcador = null;
       }
-      cerrarSidebar();
     });
 
     // ─── Delegación de eventos en el tablero ──────────────────────
@@ -1428,7 +1566,7 @@
         const texto = btnCompartir.dataset.compartir;
         if (navigator.share) {
           navigator.share({ title: 'Tablero de Insumos', text: texto, url: window.location.href })
-            .catch(() => {});
+            .catch(() => { });
         } else {
           navigator.clipboard.writeText(texto + ' — ' + window.location.href)
             .then(() => mostrarError('📋 Información copiada al portapapeles'))
