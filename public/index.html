@@ -255,6 +255,9 @@
       line-height: 1;
     }
     .btn-compartir:hover { color: var(--color-primary); }
+    .cp-icon { display: inline; }
+    @media (min-width: 768px) { .cp-icon { display: none; } }
+    @media (max-width: 767px) { .cp-text { display: none; } }
 
     /* ─── Grid de tarjetas ────────────────────────────────────── */
     #tablero {
@@ -962,7 +965,7 @@
         <div class="card-actions">
           <span class="card-badge">${estado === 'falta' ? '❌ Falta' : '✅ Sobra'}</span>
           ${botonesExtra}
-          <button class="btn-compartir" title="Compartir" data-compartir="${textCompartir}">↗</button>
+          <button class="btn-compartir" title="Compartir" data-compartir="${textCompartir}"><span class="cp-icon">↗</span><span class="cp-text"> Compartir</span></button>
           <button class="btn-atender" data-id="${registro.id}">Atender</button>
         </div>
       `;
